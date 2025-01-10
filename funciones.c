@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include "funciones.h"
 #include <string.h>
+#include <stdio.h>
+#include "funciones.h"
+#include <string.h>
 int menu() {
     int opcion;
     do {
@@ -49,7 +52,7 @@ void updateFactura (struct Factura *factura, int pos){
 }
 
 int findByCedula (int cedula){
-    int pos = -1, f = 0;
+    int pos = 0, f = 0;
     FILE *F;
     struct Factura factura;
     F = fopen("facturas.dat", "rb");
@@ -141,38 +144,32 @@ void actualizarFactura() {
 
 void deleteFactura() {
     int cedula, pos;
-    FILE *F;
     struct Factura factura;
-
-    printf("Ingrese la cédula del cliente a eliminar: ");
+    FILE *F;
+    printf("Ingrese la cédula del cliente: ");
     scanf("%d", &cedula);
-
-    pos = findByCedula(cedula); // Encontrar posición de la factura
-    if (pos != -1) {
-        F = fopen("facturas.dat", "rb+"); // Abrir en modo lectura-escritura
-        if (F == NULL) {
-            printf("Error al abrir el archivo\n");
-            return;
-        }
-
-        fseek(F, pos, SEEK_SET); // Moverse a la posición de la factura encontrada
-        fread(&factura, sizeof(struct Factura), 1, F);
-
-        if (factura.activa == 0) {
-            printf("La factura ya está eliminada.\n");
-        } else {
-            factura.activa = 0; // Marcar como eliminada
-            fseek(F, pos, SEEK_SET); // Volver a la posición inicial
-            fwrite(&factura, sizeof(struct Factura), 1, F);
-            printf("Factura eliminada correctamente (marcada como inactiva).\n");
-        }
-
-        fclose(F);
-    } else {
-        printf("No se encontró ninguna factura con la cédula ingresada.\n");
+    if (cedula < 0) {
+        printf("Error: La cédula no puede ser un número negativo.\n");
+        return;
     }
+    pos = findByCedula(cedula);
+    if (pos == -1) {
+        printf("Error: No se encontró la factura.\n");
+        return;
+    }
+    F = fopen("facturas.dat", "rb+");
+    if (F == NULL) {
+        printf("Error al abrir el archivo\n");
+        return;
+    }
+    fseek(F, pos, 0);
+    fread(&factura, sizeof(struct Factura), 1, F);
+    factura.activa = 0;
+    fseek(F, pos, 0);
+    fwrite(&factura, sizeof(struct Factura), 1, F);
+    printf("Factura eliminada con éxito\n");
+    fclose(F);
 }
-   
 void leerCadena (char *cadena, int longitud){
     fflush(stdin);
     fgets(cadena, longitud, stdin);
